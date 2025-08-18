@@ -1,19 +1,8 @@
 [build]
-  # 项目是静态 html/js，直接 publish 根目录即可（如果你有构建流程请改成构建产物目录）
-  publish = "."
   functions = "netlify/functions"
+  publish = "public"
 
-# 允许前端使用 /api/* 继续调用（无须改前端）
 [[redirects]]
   from = "/api/*"
   to = "/.netlify/functions/:splat"
   status = 200
-  force = true
-
-# 可选 CORS header（若你需要更严格控制可删改）
-[[headers]]
-  for = "/*"
-  [headers.values]
-    Access-Control-Allow-Origin = "*"
-    Access-Control-Allow-Methods = "GET, POST, OPTIONS"
-    Access-Control-Allow-Headers = "Content-Type, Authorization"
