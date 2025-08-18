@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <title>Telegraph 图床 (Netlify版)</title>
+</head>
+<body>
+  <h1>上传图片到 Telegraph</h1>
+  <input type="file" id="fileInput">
+  <button id="uploadBtn">上传</button>
+  <p id="result"></p>
+
+  <script>
+    document.getElementById("uploadBtn").onclick = async () => {
+      const file = document.getElementById("fileInput").files[0];
+      if (!file) {
+        alert("请选择一张图片");
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onloadend = async () => {
+        const base64Data = reader.result.split(",")[1];
+
+        const res = await fetch("/.netlify/functions/upload", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ image: base64Data })
+        });
+
+        const data = await res.json();
+        document.getElementById("result").innerText = data.url || data.error;
+      };
+
+      reader.readAsDataURL(file);
+    };
+  </script>
+</body>
+</html>

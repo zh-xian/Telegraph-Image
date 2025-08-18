@@ -1,65 +1,55 @@
-export async function handler(event) {
-  if (event.httpMethod === "OPTIONS") {
-    return {
-      statusCode: 200,
-      headers: {
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Headers": "Content-Type",
-        "Access-Control-Allow-Methods": "POST, OPTIONS"
-      }
-    }
-  }
-
+export async function handler(event, context) {
   if (event.httpMethod !== "POST") {
-    return { statusCode: 405, body: "Method Not Allowed" }
+    return {
+      statusCode: 405,
+      body: JSON.stringify({ error: "Method not allowed" })
+    };
   }
 
   try {
-    const formData = JSON.parse(event.body)
-    const { image } = formData // 前端传 base64
+    const body = JSON.parse(event.body);
+    const { image } = body;
 
     if (!image) {
-      return { statusCode: 400, body: "Missing image" }
+      return {
+        statusCode: 400,
+        body: JSON.stringify({ error: "No image provided" })
+      };
     }
 
     // Telegraph API
-    const response = await fetch("https://telegra.ph/upload", {
+    const res = await fetch("https://telegra.ph/upload", {
       method: "POST",
-      body: formDataToBuffer(image),
-      headers: {
-        "Content-Type": "multipart/form-data; boundary=----WebKitFormBoundary"
-      }
-    })
+      body: buildFormData(image)
+    });
 
-    const result = await response.json()
-    if (result.error) {
-      return { statusCode: 500, body: JSON.stringify(result) }
+    const data = await res.json();
+
+    if (data.error) {
+      return {
+        statusCode: 500,
+        body: JSON.stringify({ error: data.error })
+      };
     }
+
+    const url = "https://telegra.ph" + data[0].src;
 
     return {
       statusCode: 200,
-      headers: { "Access-Control-Allow-Origin": "*" },
-      body: JSON.stringify({
-        url: "https://telegra.ph" + result[0].src
-      })
-    }
+      body: JSON.stringify({ url })
+    };
   } catch (err) {
-    return { statusCode: 500, body: err.toString() }
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ error: err.message })
+    };
   }
 }
 
-// 把 base64 转换成 FormData
-function formDataToBuffer(base64) {
-  const boundary = "----WebKitFormBoundary"
-  const data = Buffer.from(base64, "base64")
-
-  const body = Buffer.concat([
-    Buffer.from(
-      `--${boundary}\r\nContent-Disposition: form-data; name="file"; filename="image.png"\r\nContent-Type: image/png\r\n\r\n`
-    ),
-    data,
-    Buffer.from(`\r\n--${boundary}--\r\n`)
-  ])
-
-  return body
+// 构造 form-data
+function buildFormData(base64String) {
+  const form = new FormData();
+  const buffer = Buffer.from(base64String, "base64");
+  form.append("file", buffer, "image.png");
+  return form;
 }
