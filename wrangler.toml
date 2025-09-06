@@ -1,7 +1,0 @@
-name = "telegraph-image"
-main = "functions/[[path]].ts"       # 保持与项目结构一致
-compatibility_date = "2025-09-05"   # 使用今天的日期，确保兼容性
-
-kv_namespaces = [
-  { binding = "img_url", id = "ns-RbybX2Nzlb7U" }
-]
