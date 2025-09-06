@@ -1,0 +1,10 @@
+name = "telegraph-image"
+main = ".output/server/index.mjs"
+compatibility_date = "2025-09-07"
+
+kv_namespaces = [
+  { binding = "img_url", id = "ns-RbybX2Nzlb7U" }
+]
+
+[vars]
+disable_telemetry = "true"
